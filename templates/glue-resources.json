@@ -1,0 +1,104 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Glue Job and IAM Role for Sentinel Fraud Detection Processor",
+    "Resources": {
+        "GlueJobRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "glue.amazonaws.com"
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+                ],
+                "Policies": [
+                    {
+                        "PolicyName": "SentinelProcessorPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "kinesis:GetRecords",
+                                        "kinesis:GetShardIterator",
+                                        "kinesis:DescribeStream"
+                                    ],
+                                    "Resource": {
+                                        "Fn::ImportValue": "Sentinel-KinesisStreamARN"
+                                    }
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject",
+                                        "s3:GetObject"
+                                    ],
+                                    "Resource": {
+                                        "Fn::Sub": [
+                                            "arn:aws:partition:s3:::${BucketName}/*",
+                                            {
+                                                "BucketName": {
+                                                    "Fn::ImportValue": "Sentinel-DataLakeBucket"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "FraudDetectionGlueJob": {
+            "Type": "AWS::Glue::Job",
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "Name": "sentinel-fraud-processor",
+                "Role": {
+                    "Ref": "GlueJobRole"
+                },
+                "Command": {
+                    "Name": "gluestreaming",
+                    "ScriptLocation": {
+                        "Fn::Sub": [
+                            "s3://${BucketName}/scripts/fraud_detection_processor.py",
+                            {
+                                "BucketName": {
+                                    "Fn::ImportValue": "Sentinel-DataLakeBucket"
+                                }
+                            }
+                        ]
+                    },
+                    "PythonVersion": "3"
+                },
+                "DefaultArguments": {
+                    "--job-language": "python",
+                    "--TempDir": {
+                        "Fn::Sub": [
+                            "s3://${BucketName}/temp/",
+                            {
+                                "BucketName": {
+                                    "Fn::ImportValue": "Sentinel-DataLakeBucket"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "GlueVersion": "4.0",
+                "NumberOfWorkers": 2,
+                "WorkerType": "G.1X"
+            }
+        }
+    }
+}
