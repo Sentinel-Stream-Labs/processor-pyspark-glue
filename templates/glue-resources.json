@@ -85,6 +85,26 @@
                                             "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/*"
                                         }
                                     ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "glue:CreateTable",
+                                        "glue:UpdateTable",
+                                        "glue:GetTable",
+                                        "glue:GetDatabase"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:catalog"
+                                        },
+                                        {
+                                            "Fn::Sub": "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:database/sentinel_fraud_db"
+                                        },
+                                        {
+                                            "Fn::Sub": "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:table/sentinel_fraud_db/*"
+                                        }
+                                    ]
                                 }
                             ]
                         }
@@ -131,6 +151,50 @@
                 "NumberOfWorkers": 2,
                 "WorkerType": "G.1X"
             }
+        },
+        "SentinelGlueDatabase": {
+            "Type": "AWS::Glue::Database",
+            "Properties": {
+                "CatalogId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DatabaseInput": {
+                    "Name": "sentinel_fraud_db",
+                    "Description": "Database for Sentinel Fraud Detection refined data"
+                }
+            }
+        },
+        "SentinelSilverCrawler": {
+            "Type": "AWS::Glue::Crawler",
+            "Properties": {
+                "Name": "sentinel-silver-crawler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "GlueJobRole",
+                        "Arn"
+                    ]
+                },
+                "DatabaseName": {
+                    "Ref": "SentinelGlueDatabase"
+                },
+                "Targets": {
+                    "S3Targets": [
+                        {
+                            "Path": {
+                                "Fn::Sub": "s3://${BucketName}/silver/"
+                            }
+                        }
+                    ]
+                },
+                "TablePrefix": "silver_",
+                "SchemaChangePolicy": {
+                    "UpdateBehavior": "UPDATE_IN_DATABASE",
+                    "DeleteBehavior": "LOG"
+                }
+            },
+            "DependsOn": [
+                "SentinelGlueDatabase"
+            ]
         }
     }
 }
