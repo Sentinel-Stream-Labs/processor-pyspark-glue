@@ -48,7 +48,7 @@ silver_df = bronze_df.select(
     from_json(col("raw_data"), transaction_schema).alias("data"),
     col("arrival_time")
 ).select("data.*", "arrival_time") \
- .with_expr("ingestion_timestamp", "current_timestamp()")
+ .withColumn("ingestion_timestamp", current_timestamp())
 
 # 6. Writing to S3 (Medallion Folders)
 # Note: For simplicity in this demo, we write the Silver data as Parquet.
