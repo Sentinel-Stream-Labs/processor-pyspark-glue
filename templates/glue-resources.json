@@ -1,6 +1,12 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "AWS Glue Job and IAM Role for Sentinel Fraud Detection Processor",
+    "Parameters": {
+        "ProjectName": {
+            "Type": "String",
+            "Default": "sentinel-fraud-detection"
+        }
+    },
     "Resources": {
         "GlueJobRole": {
             "Type": "AWS::IAM::Role",
@@ -31,11 +37,18 @@
                                     "Action": [
                                         "kinesis:GetRecords",
                                         "kinesis:GetShardIterator",
-                                        "kinesis:DescribeStream"
+                                        "kinesis:DescribeStream",
+                                        "kinesis:ListShards",
+                                        "kinesis:ListStreams"
                                     ],
-                                    "Resource": {
-                                        "Fn::ImportValue": "Sentinel-KinesisStreamARN"
-                                    }
+                                    "Resource": [
+                                        {
+                                            "Fn::ImportValue": "Sentinel-KinesisStreamARN"
+                                        },
+                                        {
+                                            "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/*"
+                                        }
+                                    ]
                                 },
                                 {
                                     "Effect": "Allow",
@@ -65,24 +78,6 @@
                                                     }
                                                 }
                                             ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "kinesis:GetRecords",
-                                        "kinesis:GetShardIterator",
-                                        "kinesis:DescribeStream",
-                                        "kinesis:ListShards",
-                                        "kinesis:ListStreams"
-                                    ],
-                                    "Resource": [
-                                        {
-                                            "Fn::ImportValue": "Sentinel-KinesisStreamARN"
-                                        },
-                                        {
-                                            "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/*"
                                         }
                                     ]
                                 },
@@ -181,7 +176,14 @@
                     "S3Targets": [
                         {
                             "Path": {
-                                "Fn::Sub": "s3://${BucketName}/silver/"
+                                "Fn::Sub": [
+                                    "s3://${BucketName}/silver/",
+                                    {
+                                        "BucketName": {
+                                            "Fn::ImportValue": "Sentinel-DataLakeBucket"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     ]
