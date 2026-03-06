@@ -67,6 +67,24 @@
                                             ]
                                         }
                                     ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "kinesis:GetRecords",
+                                        "kinesis:GetShardIterator",
+                                        "kinesis:DescribeStream",
+                                        "kinesis:ListShards",
+                                        "kinesis:ListStreams"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::ImportValue": "Sentinel-KinesisStreamARN"
+                                        },
+                                        {
+                                            "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/*"
+                                        }
+                                    ]
                                 }
                             ]
                         }
