@@ -176,17 +176,23 @@
                         {
                             "Path": {
                                 "Fn::Sub": [
-                                    "s3://${BucketName}/silver/**",
+                                    "s3://${BucketName}/silver",
                                     {
                                         "BucketName": {
                                             "Fn::ImportValue": "Sentinel-DataLakeBucket"
                                         }
                                     }
                                 ]
-                            }
+                            },
+                            "Exclusions": [
+                                "_spark_metadata/**",
+                                "_SUCCESS",
+                                "temp/**"
+                            ]
                         }
                     ]
                 },
+                "TableLevel": 2,
                 "TablePrefix": "silver_"
             }
         },
@@ -203,7 +209,7 @@
                 "DatabaseName": {
                     "Ref": "SentinelGlueDatabase"
                 },
-                "Configuration": "{\"Version\":1.0,\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
                 "Targets": {
                     "S3Targets": [
                         {
@@ -216,10 +222,16 @@
                                         }
                                     }
                                 ]
-                            }
+                            },
+                            "Exclusions": [
+                                "_spark_metadata/**",
+                                "_SUCCESS",
+                                "temp/**"
+                            ]
                         }
                     ]
                 },
+                "TableLevel": 2,
                 "TablePrefix": "bronze_"
             }
         }
