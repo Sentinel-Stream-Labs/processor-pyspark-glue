@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS Glue Job and IAM Role for Sentinel Fraud Detection Processor",
+    "Description": "AWS Glue Infrastructure for Sentinel Medallion Architecture",
     "Parameters": {
         "ProjectName": {
             "Type": "String",
@@ -109,7 +109,6 @@
         },
         "FraudDetectionGlueJob": {
             "Type": "AWS::Glue::Job",
-            "DeletionPolicy": "Delete",
             "Properties": {
                 "Name": "sentinel-fraud-processor",
                 "Role": {
@@ -154,8 +153,7 @@
                     "Ref": "AWS::AccountId"
                 },
                 "DatabaseInput": {
-                    "Name": "sentinel_fraud_db",
-                    "Description": "Database for Sentinel Fraud Detection refined data"
+                    "Name": "sentinel_fraud_db"
                 }
             }
         },
@@ -172,6 +170,7 @@
                 "DatabaseName": {
                     "Ref": "SentinelGlueDatabase"
                 },
+                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
                 "Targets": {
                     "S3Targets": [
                         {
@@ -188,15 +187,41 @@
                         }
                     ]
                 },
-                "TablePrefix": "silver_",
-                "SchemaChangePolicy": {
-                    "UpdateBehavior": "UPDATE_IN_DATABASE",
-                    "DeleteBehavior": "LOG"
-                }
-            },
-            "DependsOn": [
-                "SentinelGlueDatabase"
-            ]
+                "TablePrefix": "silver_"
+            }
+        },
+        "SentinelBronzeCrawler": {
+            "Type": "AWS::Glue::Crawler",
+            "Properties": {
+                "Name": "sentinel-bronze-crawler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "GlueJobRole",
+                        "Arn"
+                    ]
+                },
+                "DatabaseName": {
+                    "Ref": "SentinelGlueDatabase"
+                },
+                "Configuration": "{\"Version\":1.0,\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Targets": {
+                    "S3Targets": [
+                        {
+                            "Path": {
+                                "Fn::Sub": [
+                                    "s3://${BucketName}/bronze/",
+                                    {
+                                        "BucketName": {
+                                            "Fn::ImportValue": "Sentinel-DataLakeBucket"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "TablePrefix": "bronze_"
+            }
         }
     }
 }
