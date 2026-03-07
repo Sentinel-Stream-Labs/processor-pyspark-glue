@@ -192,7 +192,6 @@
                         }
                     ]
                 },
-                "TableLevel": 2,
                 "TablePrefix": "silver_"
             }
         },
@@ -209,7 +208,7 @@
                 "DatabaseName": {
                     "Ref": "SentinelGlueDatabase"
                 },
-                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Configuration": "{\"Version\":1.0,\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
                 "Targets": {
                     "S3Targets": [
                         {
@@ -231,7 +230,6 @@
                         }
                     ]
                 },
-                "TableLevel": 2,
                 "TablePrefix": "bronze_"
             }
         }
