@@ -176,7 +176,7 @@
                         {
                             "Path": {
                                 "Fn::Sub": [
-                                    "s3://${BucketName}/silver",
+                                    "s3://${BucketName}/silver/**",
                                     {
                                         "BucketName": {
                                             "Fn::ImportValue": "Sentinel-DataLakeBucket"
