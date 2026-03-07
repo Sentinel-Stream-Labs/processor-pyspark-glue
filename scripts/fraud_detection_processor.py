@@ -51,7 +51,15 @@ silver_df = bronze_df.select(
  .withColumn("ingestion_timestamp", current_timestamp())
 
 # 6. Writing to S3 (Medallion Folders)
-# Note: For simplicity in this demo, we write the Silver data as Parquet.
+# --- Bronze Layer: Write Raw JSON strings ---
+bronze_query = bronze_df.writeStream \
+    .format("parquet") \
+    .option("path", f"{S3_BUCKET_PATH}/bronze/") \
+    .option("checkpointLocation", f"{CHECKPOINT_LOCATION}bronze/") \
+    .outputMode("append") \
+    .start()
+
+# --- Silver Layer: Write Cleaned Parquet data ---
 query = silver_df.writeStream \
     .format("parquet") \
     .option("path", f"{S3_BUCKET_PATH}/silver/") \
@@ -59,4 +67,5 @@ query = silver_df.writeStream \
     .outputMode("append") \
     .start()
 
-query.awaitTermination()
+# Wait for both streams to terminate
+spark.streams.awaitAnyTermination()
