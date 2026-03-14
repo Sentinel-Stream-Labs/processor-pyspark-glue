@@ -52,7 +52,8 @@ silver_df = bronze_df.select(
 
 # 6. Writing to S3 (Medallion Folders)
 # --- Bronze Layer: Write Raw JSON strings ---
-bronze_query = bronze_df.writeStream \
+# Coalesce to reduce partition fragmentation and prevent table explosion in Glue Crawler
+bronze_query = bronze_df.coalesce(10).writeStream \
     .format("parquet") \
     .option("path", f"{S3_BUCKET_PATH}/bronze/") \
     .option("checkpointLocation", f"{CHECKPOINT_LOCATION}bronze/") \
@@ -60,7 +61,9 @@ bronze_query = bronze_df.writeStream \
     .start()
 
 # --- Silver Layer: Write Cleaned Parquet data ---
-query = silver_df.writeStream \
+# Partition by date for efficient querying while maintaining single table in Glue Catalog
+query = silver_df.coalesce(10).writeStream \
+    .partitionBy("ingestion_timestamp") \
     .format("parquet") \
     .option("path", f"{S3_BUCKET_PATH}/silver/") \
     .option("checkpointLocation", CHECKPOINT_LOCATION) \

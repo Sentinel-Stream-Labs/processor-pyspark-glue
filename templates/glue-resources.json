@@ -170,13 +170,13 @@
                 "DatabaseName": {
                     "Ref": "SentinelGlueDatabase"
                 },
-                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\",\"Prefix\":\"\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"SchemaChangePolicy\":{\"UpdateBehavior\":\"UPDATE_IN_DATABASE\",\"DeleteBehavior\":\"LOG\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
                 "Targets": {
                     "S3Targets": [
                         {
                             "Path": {
                                 "Fn::Sub": [
-                                    "s3://${BucketName}/silver",
+                                    "s3://${BucketName}/silver/",
                                     {
                                         "BucketName": {
                                             "Fn::ImportValue": "Sentinel-DataLakeBucket"
@@ -187,12 +187,17 @@
                             "Exclusions": [
                                 "_spark_metadata/**",
                                 "_SUCCESS",
-                                "temp/**"
+                                "temp/**",
+                                "*.log"
                             ]
                         }
                     ]
                 },
-                "TablePrefix": "silver_"
+                "TablePrefix": "silver_",
+                "SchemaChangePolicy": {
+                    "UpdateBehavior": "UPDATE_IN_DATABASE",
+                    "DeleteBehavior": "LOG"
+                }
             }
         },
         "SentinelBronzeCrawler": {
@@ -208,13 +213,13 @@
                 "DatabaseName": {
                     "Ref": "SentinelGlueDatabase"
                 },
-                "Configuration": "{\"Version\":1.0,\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\",\"Prefix\":\"\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"SchemaChangePolicy\":{\"UpdateBehavior\":\"UPDATE_IN_DATABASE\",\"DeleteBehavior\":\"LOG\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
                 "Targets": {
                     "S3Targets": [
                         {
                             "Path": {
                                 "Fn::Sub": [
-                                    "s3://${BucketName}/bronze",
+                                    "s3://${BucketName}/bronze/",
                                     {
                                         "BucketName": {
                                             "Fn::ImportValue": "Sentinel-DataLakeBucket"
@@ -225,12 +230,17 @@
                             "Exclusions": [
                                 "_spark_metadata/**",
                                 "_SUCCESS",
-                                "temp/**"
+                                "temp/**",
+                                "*.log"
                             ]
                         }
                     ]
                 },
-                "TablePrefix": "bronze_"
+                "TablePrefix": "bronze_",
+                "SchemaChangePolicy": {
+                    "UpdateBehavior": "UPDATE_IN_DATABASE",
+                    "DeleteBehavior": "LOG"
+                }
             }
         }
     }
