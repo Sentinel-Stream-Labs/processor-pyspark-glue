@@ -4,7 +4,7 @@ from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
-from pyspark.sql.functions import from_json, col, current_timestamp
+from pyspark.sql.functions import from_json, col, current_timestamp, date_format
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, LongType
 
 # 1. Initialize Glue Context
@@ -52,8 +52,11 @@ silver_df = bronze_df.select(
 
 # 6. Writing to S3 (Medallion Folders)
 # --- Bronze Layer: Write Raw JSON strings ---
-# Coalesce to reduce partition fragmentation and prevent table explosion in Glue Crawler
-bronze_query = bronze_df.coalesce(10).writeStream \
+# Coalesce to reduce partition fragmentation and add date partitioning for crawler consolidation
+bronze_with_partition = bronze_df.withColumn("partition_date", date_format(col("arrival_time"), "yyyy-MM-dd"))
+
+bronze_query = bronze_with_partition.coalesce(10).writeStream \
+    .partitionBy("partition_date") \
     .format("parquet") \
     .option("path", f"{S3_BUCKET_PATH}/bronze/") \
     .option("checkpointLocation", f"{CHECKPOINT_LOCATION}bronze/") \
@@ -62,8 +65,10 @@ bronze_query = bronze_df.coalesce(10).writeStream \
 
 # --- Silver Layer: Write Cleaned Parquet data ---
 # Partition by date for efficient querying while maintaining single table in Glue Catalog
-query = silver_df.coalesce(10).writeStream \
-    .partitionBy("ingestion_timestamp") \
+silver_with_partition = silver_df.withColumn("partition_date", date_format(col("ingestion_timestamp"), "yyyy-MM-dd"))
+
+query = silver_with_partition.coalesce(10).writeStream \
+    .partitionBy("partition_date") \
     .format("parquet") \
     .option("path", f"{S3_BUCKET_PATH}/silver/") \
     .option("checkpointLocation", CHECKPOINT_LOCATION) \
