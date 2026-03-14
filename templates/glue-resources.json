@@ -324,27 +324,6 @@
                 "Protocol": "email",
                 "Endpoint": "bhavik.mundra1603@gmail.com"
             }
-        },
-        "SentinelCrawlerRunTrigger": {
-            "Type": "AWS::Glue::Trigger",
-            "Properties": {
-                "Name": "sentinel-auto-crawler-trigger",
-                "Type": "SCHEDULED",
-                "ScheduleExpression": "cron(0 */1 * * ? *)",
-                "Actions": [
-                    {
-                        "CrawlerName": "sentinel-bronze-crawler"
-                    },
-                    {
-                        "CrawlerName": "sentinel-silver-crawler"
-                    },
-                    {
-                        "CrawlerName": "sentinel-gold-crawler"
-                    }
-                ],
-                "StartOnCreation": true,
-                "Description": "Runs all crawlers hourly to keep Glue Data Catalog updated"
-            }
         }
     },
     "Outputs": {
