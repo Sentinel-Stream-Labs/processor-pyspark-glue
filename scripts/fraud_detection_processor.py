@@ -102,7 +102,8 @@ gold_query = gold_df.coalesce(5).writeStream \
     .format("parquet") \
     .option("path", f"{S3_BUCKET_PATH}/gold/") \
     .option("checkpointLocation", f"{CHECKPOINT_LOCATION}gold/") \
-    .outputMode("complete") \
+    .outputMode("append") \
+    .trigger(processingTime="5 minutes") \
     .start()
 
 # Wait for both streams to terminate
