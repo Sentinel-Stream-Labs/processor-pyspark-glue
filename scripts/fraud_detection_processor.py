@@ -4,7 +4,7 @@ from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
-from pyspark.sql.functions import from_json, col, current_timestamp, date_format, window, sum as _sum, count as _count, when as _when
+from pyspark.sql.functions import from_json, col, current_timestamp, date_format, window, sum as _sum, count as _count, when as _when, first as _first
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, LongType
 
 # 1. Initialize Glue Context
@@ -87,7 +87,7 @@ gold_df = silver_df \
     ).agg(
         _sum("transaction_amount").alias("total_spent"),
         _count("transaction_id").alias("transaction_count"),
-        col("terminal_id")
+        _first("terminal_id").alias("terminal_id")
     ) \
     .withColumn("avg_transaction_value", col("total_spent") / col("transaction_count")) \
     .withColumn("fraud_risk_flag", 
