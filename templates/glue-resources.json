@@ -334,30 +334,6 @@
                 }
             }
         },
-        "SentinelGoldCrawlerTrigger": {
-            "Type": "AWS::Glue::Trigger",
-            "Properties": {
-                "Name": "sentinel-gold-crawler-trigger",
-                "Type": "CONDITIONAL",
-                "Actions": [
-                    {
-                        "JobName": "sentinel-fraud-processor"
-                    }
-                ],
-                "Predicate": {
-                    "Logical": "ANY",
-                    "Conditions": [
-                        {
-                            "LogicalOperator": "EQUALS",
-                            "CrawlerName": "sentinel-silver-crawler",
-                            "CrawlState": "SUCCEEDED"
-                        }
-                    ]
-                },
-                "StartOnCreation": true,
-                "Description": "Trigger Gold layer job after Silver layer is crawled"
-            }
-        },
         "SentinelCrawlerRunTrigger": {
             "Type": "AWS::Glue::Trigger",
             "Properties": {
