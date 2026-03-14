@@ -330,7 +330,7 @@
             "Properties": {
                 "DashboardName": "Sentinel-Fraud-Detection-Pipeline",
                 "DashboardBody": {
-                    "Fn::Sub": "{\"widgets\":[{\"type\":\"metric\",\"properties\":{\"metrics\":[[\"AWS/Glue\",\"glue.driver.aggregate.numFailedTasks\",{\"stat\":\"Sum\",\"label\":\"Glue Job Failures\"}],[\"AWS/Glue\",\"glue.driver.aggregate.numCompletedTasks\",{\"stat\":\"Sum\",\"label\":\"Glue Job Completed Tasks\"}],[\"AWS/Kinesis\",\"GetRecords.IteratorAgeMilliseconds\",{\"stat\":\"Maximum\",\"label\":\"Kinesis Iterator Age (Lag)\"}],[\"AWS/Kinesis\",\"IncomingRecords\",{\"stat\":\"Sum\",\"label\":\"Incoming Records to Kinesis\"}]],\"period\":300,\"stat\":\"Average\",\"region\":\"${AWS::Region}\",\"title\":\"Pipeline Health\"}},{\"type\":\"metric\",\"properties\":{\"metrics\":[[\"AWS/Lambda\",\"Duration\",{\"stat\":\"Average\",\"label\":\"Lambda Execution Time\"}],[\"AWS/Lambda\",\"Errors\",{\"stat\":\"Sum\",\"label\":\"Lambda Errors\"}],[\"AWS/Lambda\",\"Invocations\",{\"stat\":\"Sum\",\"label\":\"Lambda Invocations\"}]],\"period\":300,\"stat\":\"Average\",\"region\":\"${AWS::Region}\",\"title\":\"Alerting Lambda Health\"}},{\"type\":\"log\",\"properties\":{\"query\":\"fields @timestamp, fraud_risk_flag | filter fraud_risk_flag = \\\"HIGH\\\" | stats count() as HighRiskTransactions\",\"region\":\"${AWS::Region}\",\"title\":\"High Risk Transactions (Last Hour)\"}}]}"
+                    "Fn::Sub": "{\"widgets\":[{\"type\":\"metric\",\"properties\":{\"metrics\":[[\"AWS/Glue\",\"glue.driver.aggregate.numFailedTasks\",{\"stat\":\"Sum\",\"label\":\"Glue Job Failures\"}],[\"AWS/Glue\",\"glue.driver.aggregate.numCompletedTasks\",{\"stat\":\"Sum\",\"label\":\"Glue Job Completed Tasks\"}],[\"AWS/Kinesis\",\"GetRecords.IteratorAgeMilliseconds\",{\"stat\":\"Maximum\",\"label\":\"Kinesis Iterator Age (Lag)\"}],[\"AWS/Kinesis\",\"IncomingRecords\",{\"stat\":\"Sum\",\"label\":\"Incoming Records to Kinesis\"}]],\"period\":300,\"stat\":\"Average\",\"region\":\"${AWS::Region}\",\"title\":\"Pipeline Health\"}},{\"type\":\"metric\",\"properties\":{\"metrics\":[[\"AWS/Lambda\",\"Duration\",{\"stat\":\"Average\",\"label\":\"Lambda Execution Time\"}],[\"AWS/Lambda\",\"Errors\",{\"stat\":\"Sum\",\"label\":\"Lambda Errors\"}],[\"AWS/Lambda\",\"Invocations\",{\"stat\":\"Sum\",\"label\":\"Lambda Invocations\"}]],\"period\":300,\"stat\":\"Average\",\"region\":\"${AWS::Region}\",\"title\":\"Alerting Lambda Health\"}}]}"
                 }
             }
         },
@@ -341,10 +341,7 @@
                 "Type": "CONDITIONAL",
                 "Actions": [
                     {
-                        "JobName": "sentinel-fraud-processor",
-                        "Arguments": {
-                            "--job-bookmark-option": "job-bookmark-enable"
-                        }
+                        "JobName": "sentinel-fraud-processor"
                     }
                 ],
                 "Predicate": {
