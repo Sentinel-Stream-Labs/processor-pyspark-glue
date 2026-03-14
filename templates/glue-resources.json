@@ -302,19 +302,18 @@
                 }
             }
         },
-        "SentinelCrawlerScheduleTrigger": {
+        "SentinelRawLayerCrawlerScheduleTrigger": {
             "Type": "AWS::Glue::Trigger",
             "DependsOn": [
                 "SentinelBronzeCrawler",
-                "SentinelSilverCrawler",
-                "SentinelGoldCrawler"
+                "SentinelSilverCrawler"
             ],
             "Properties": {
-                "Name": "sentinel-crawler-hourly-trigger",
+                "Name": "sentinel-raw-layer-crawler-hourly-trigger",
                 "Type": "SCHEDULED",
                 "Schedule": "cron(0 * * * ? *)",
                 "StartOnCreation": true,
-                "Description": "Runs all three data lake crawlers every hour to update Glue Catalog",
+                "Description": "Runs the bronze and silver crawlers every hour to update the Glue Catalog",
                 "Actions": [
                     {
                         "CrawlerName": {
@@ -325,7 +324,22 @@
                         "CrawlerName": {
                             "Ref": "SentinelSilverCrawler"
                         }
-                    },
+                    }
+                ]
+            }
+        },
+        "SentinelGoldCrawlerScheduleTrigger": {
+            "Type": "AWS::Glue::Trigger",
+            "DependsOn": [
+                "SentinelGoldCrawler"
+            ],
+            "Properties": {
+                "Name": "sentinel-gold-crawler-hourly-trigger",
+                "Type": "SCHEDULED",
+                "Schedule": "cron(5 * * * ? *)",
+                "StartOnCreation": true,
+                "Description": "Runs the gold crawler five minutes after the bronze and silver crawlers",
+                "Actions": [
                     {
                         "CrawlerName": {
                             "Ref": "SentinelGoldCrawler"
