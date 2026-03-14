@@ -312,7 +312,7 @@
             "Properties": {
                 "Name": "sentinel-crawler-hourly-trigger",
                 "Type": "SCHEDULED",
-                "ScheduleExpression": "cron(0 * * * ? *)",
+                "Schedule": "cron(0 * * * ? *)",
                 "StartOnCreation": true,
                 "Description": "Runs all three data lake crawlers every hour to update Glue Catalog",
                 "Actions": [
