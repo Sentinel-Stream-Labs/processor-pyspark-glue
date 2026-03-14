@@ -4,7 +4,7 @@ from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
-from pyspark.sql.functions import from_json, col, current_timestamp, date_format
+from pyspark.sql.functions import from_json, col, current_timestamp, date_format, window, sum as _sum, count as _count, when as _when
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, LongType
 
 # 1. Initialize Glue Context
@@ -73,6 +73,36 @@ query = silver_with_partition.coalesce(10).writeStream \
     .option("path", f"{S3_BUCKET_PATH}/silver/") \
     .option("checkpointLocation", CHECKPOINT_LOCATION) \
     .outputMode("append") \
+    .start()
+
+# --- Gold Layer: Real-Time Fraud Aggregations ---
+# Windowed aggregations to detect velocity-based fraud patterns
+# Watermarking: Waits 10 minutes for late-arriving data before finalizing results
+gold_df = silver_df \
+    .withWatermark("ingestion_timestamp", "10 minutes") \
+    .groupBy(
+        window(col("ingestion_timestamp"), "10 minutes", "5 minutes"),
+        col("card_number"),
+        col("city")
+    ).agg(
+        _sum("transaction_amount").alias("total_spent"),
+        _count("transaction_id").alias("transaction_count"),
+        col("terminal_id")
+    ) \
+    .withColumn("avg_transaction_value", col("total_spent") / col("transaction_count")) \
+    .withColumn("fraud_risk_flag", 
+        _when((col("total_spent") > 10000) | (col("transaction_count") > 10), "HIGH")
+        .when((col("total_spent") > 5000) | (col("transaction_count") > 5), "MEDIUM")
+        .otherwise("LOW")
+    ) \
+    .withColumn("partition_date", date_format(col("window").getField("start"), "yyyy-MM-dd"))
+
+gold_query = gold_df.coalesce(5).writeStream \
+    .partitionBy("partition_date") \
+    .format("parquet") \
+    .option("path", f"{S3_BUCKET_PATH}/gold/") \
+    .option("checkpointLocation", f"{CHECKPOINT_LOCATION}gold/") \
+    .outputMode("complete") \
     .start()
 
 # Wait for both streams to terminate

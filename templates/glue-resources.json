@@ -242,6 +242,49 @@
                     "DeleteBehavior": "LOG"
                 }
             }
+        },
+        "SentinelGoldCrawler": {
+            "Type": "AWS::Glue::Crawler",
+            "Properties": {
+                "Name": "sentinel-gold-crawler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "GlueJobRole",
+                        "Arn"
+                    ]
+                },
+                "DatabaseName": {
+                    "Ref": "SentinelGlueDatabase"
+                },
+                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Targets": {
+                    "S3Targets": [
+                        {
+                            "Path": {
+                                "Fn::Sub": [
+                                    "s3://${BucketName}/gold/",
+                                    {
+                                        "BucketName": {
+                                            "Fn::ImportValue": "Sentinel-DataLakeBucket"
+                                        }
+                                    }
+                                ]
+                            },
+                            "Exclusions": [
+                                "_spark_metadata/**",
+                                "_SUCCESS",
+                                "temp/**",
+                                "*.log"
+                            ]
+                        }
+                    ]
+                },
+                "TablePrefix": "gold_",
+                "SchemaChangePolicy": {
+                    "UpdateBehavior": "UPDATE_IN_DATABASE",
+                    "DeleteBehavior": "LOG"
+                }
+            }
         }
     }
 }
