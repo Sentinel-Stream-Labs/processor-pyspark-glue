@@ -170,7 +170,7 @@
                 "DatabaseName": {
                     "Ref": "SentinelGlueDatabase"
                 },
-                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"SchemaChangePolicy\":{\"UpdateBehavior\":\"UPDATE_IN_DATABASE\",\"DeleteBehavior\":\"LOG\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
                 "Targets": {
                     "S3Targets": [
                         {
@@ -213,7 +213,7 @@
                 "DatabaseName": {
                     "Ref": "SentinelGlueDatabase"
                 },
-                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"SchemaChangePolicy\":{\"UpdateBehavior\":\"UPDATE_IN_DATABASE\",\"DeleteBehavior\":\"LOG\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
+                "Configuration": "{\"Version\":1.0,\"CrawlerOutput\":{\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"},\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"}},\"Grouping\":{\"TableGroupingPolicy\":\"CombineCompatibleSchemas\"}}",
                 "Targets": {
                     "S3Targets": [
                         {
